@@ -1,22 +1,25 @@
 --globali
-Class =  require("libs.classic")
 require("libs.table")
-Level = require("src.level")
+Class =  require("libs.classic")
 Object = require("src.object")
 Player = require("src.player")
+Level = require("src.level")
 local level
-Pprint = require("libs.pprint")
 C = {
     debug= true,
 }
+
 function love.load()
     love.graphics.setDefaultFilter("nearest","nearest")
-
     level = Level("dungeon.png")
 end
 
 function love.update(dt)
     level:update(dt)
+    if level.restart then
+        level = nil
+        level = Level("dungeon.png")
+    end
 end
 
 function love.draw()

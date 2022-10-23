@@ -6,10 +6,12 @@ Project Description
 
 ### Todo
 
+- [ ] invece di disegnare ogni pixel, consolidare ogni oggetto in un canvas  
 - [ ] consolidare gli oggetti in canvas per evitare draw call  
 
 ### In Progress
 
+- [ ] gestione callback keyreleased  
 
 ### Done ✓
 

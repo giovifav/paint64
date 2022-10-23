@@ -7,44 +7,26 @@ function Object:new(r, g, b)
   self.b      = b or 1
   self.pixels = {}
   self.remove = false
-  self.solid  = true
-
-  if r == 0 and g == 0 and b == 0 then
-    self.stationary = true
-  else
-    self.stationary = false
-  end
+  self.solid  = false
 end
-
-
-
-
-
 ------------------------------------------------------------------------------------------------------
 function Object:addPixel(x, y)
   table.insert(self.pixels, { x, y })
 end
-
 ------------------------------------------------------------------------------------------------------
 function Object:draw()
-  love.graphics.setColor(self.r, self.g, self.b)
-
-    for k, v in pairs(self.pixels) do
-      local x, y = self.x + v[1], self.y + v[2] 
-      --local x, y = v[1], v[2]
-      love.graphics.rectangle("fill",x, y, 1, 1)
-    end
-
+  love.graphics.setColor(1,1,1,1)
+  love.graphics.draw(self.canvas, self.x,self.y)
 end
-
 ------------------------------------------------------------------------------------------------------
-function Object:update(dt)
-
+function Object:update() 
+  
+  self.oX, self.oY = self.x, self.y
+  self.x = self.x + self.direction[1]
+  self.y = self.y + self.direction[2] 
 end
-
 ------------------------------------------------------------------------------------------------------
 function Object:flood8(x, y, map, width, height)
-
   if x <= width and x >= 1 and y <= height and y >= 1 then
     if type(map[x][y]) == "table" then
       if map[x][y][1] == self.r and map[x][y][2] == self.g and map[x][y][3] == self.b then
@@ -62,39 +44,41 @@ function Object:flood8(x, y, map, width, height)
     end
   end
 end
-
 ------------------------------------------------------------------------------------------------------
 function Object:consolidate()
-
   local minX, minY, maxX, maxY = nil, nil, nil, nil
   for k, v in ipairs(self.pixels) do
     if minX == nil then minX = v[1] end
     if maxX == nil then maxX = v[1] end
     if minY == nil then minY = v[2] end
     if maxY == nil then maxY = v[2] end
-
     if v[1] <= minX then minX = v[1] end
     if v[1] >= maxX then maxX = v[1] end
     if v[2] <= minY then minY = v[2] end
     if v[2] >= maxY then maxY = v[2] end
-
   end
-
   self.width = maxX - minX + 1
   self.height = maxY - minY + 1
-
   self.x, self.y = minX, minY
-
   local t = {}
-  for key, v in pairs(self.pixels) do
+  for _, v in pairs(self.pixels) do
     --inseriamo le posizioni relative a x e y dell'oggetto
-    table.insert(t, { v[1] - self.x , v[2] - self.y })
+    table.insert(t, { v[1] - self.x +1 , v[2] - self.y +1  })
   end
   self.pixels = t
- 
+
+  -- ora disegnamo l'oggetto nel canvas 
+  self.canvas = love.graphics.newCanvas(self.width, self.height)
+  love.graphics.setCanvas(self.canvas)
+  love.graphics.clear(0, 0, 0, 0)
+  love.graphics.setColor(self.r, self.g, self.b)
+  for k, v in pairs(self.pixels) do
+    local x, y = v[1] -1, v[2] -1
+    love.graphics.rectangle("fill",x, y, 1, 1)
+  end
+  love.graphics.setCanvas()
 
 end
-
 ------------------------------------------------------------------------------------------------------
 function Object:isPixel(x, y)
   for k, v in pairs(self.pixels) do
@@ -103,13 +87,7 @@ function Object:isPixel(x, y)
     end
   end
 end
-
 ------------------------------------------------------------------------------------------------------
-
-
-
-
-
 function Object:leftArrow()
   -- creiamo una tabella temporanea
   local t = {}
@@ -142,9 +120,7 @@ function Object:leftArrow()
     return false
   end
 end
-
 ------------------------------------------------------------------------------------------------------
-
 function Object:upArrow()
   -- creiamo una tabella temporanea
   local t = {}
@@ -177,7 +153,6 @@ function Object:upArrow()
     return false
   end
 end
-
 ------------------------------------------------------------------------------------------------------
 function Object:downArrow()
   -- creiamo una tabella temporanea
@@ -211,7 +186,6 @@ function Object:downArrow()
     return false
   end
 end
-
 ------------------------------------------------------------------------------------------------------
 function Object:rightArrow()
   -- creiamo una tabella temporanea
@@ -245,7 +219,6 @@ function Object:rightArrow()
     return false
   end
 end
-
 ------------------------------------------------------------------------------------------------------
 function Object:topLeftArrow()
   -- se l'oggetto è quadrato
@@ -400,34 +373,39 @@ end
 ------------------------------------------------------------------------------------------------------
 function Object:checkArrow()
   if self.width > 1 and self.height > 1 then
-    if self:leftArrow() then
-      self.direction = "left"
+    if self:leftArrow() then -- sinistra 
+      self.direction = {-1,0}
     elseif self:rightArrow() then
-      self.direction = "right"
+      self.direction = {1,0}
     elseif self:upArrow() then
-      self.direction = "up"
+      self.direction = {0,-1}
     elseif self:downArrow() then
-      self.direction = "down"
+      self.direction = {0,1}
     elseif self:topLeftArrow() then
-      self.direction = "topLeft"
+      self.direction = {-1,-1}
     elseif self:topRightArrow() then
-      self.direction = "topright"
+      self.direction = {1,-1}
     elseif self:bottomLeftArrow() then
-      self.direction = "bottomLeft"
+      self.direction = {-1,1}
     elseif self:bottomRightArrow() then
-      self.direction = "bottomRight"
+      self.direction = {1,1}
     else -- se non è freccia l'oggetto è fermo
-      self.direction = "none"
-      if not self.player then
-        self.stationary = true
-      end
+      self.direction = {0,0}
     end
-    print(self.direction)
   else
-    self.direction = "none"
-    self.stationary = true
+    self.direction = {0,0}
   end
 end
-
 ------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
 return Object
