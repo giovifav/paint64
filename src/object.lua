@@ -1,30 +1,56 @@
 local Object = Class:extend()
 ------------------------------------------------------------------------------------------------------
 function Object:new(r, g, b)
-  self.type   = "basicObject"
-  self.r      = r or 1
-  self.g      = g or 1
-  self.b      = b or 1
-  self.pixels = {}
-  self.remove = false
-  self.solid  = false
+  self.type       = "basicObject"
+  self.r          = r or 1
+  self.g          = g or 1
+  self.b          = b or 1
+  self.pixels     = {}
+  self.remove     = false
+  self.solid      = false
+  self.spriteFlip = { 0, 0 }
+
 end
+
 ------------------------------------------------------------------------------------------------------
 function Object:addPixel(x, y)
   table.insert(self.pixels, { x, y })
 end
+
 ------------------------------------------------------------------------------------------------------
 function Object:draw()
-  love.graphics.setColor(1,1,1,1)
-  love.graphics.draw(self.canvas, self.x,self.y)
+  love.graphics.setColor(1, 1, 1, 1)
+  local rx, ry, ox, oy = 0, 0, 0,0
+  if self.spriteFlip[1] == 0 then
+    rx = 1
+  else
+    rx = self.spriteFlip[1]
+    ox = self.width/2
+  end
+  if self.spriteFlip[2] == 0 then
+    ry = 1
+  else
+    ry = self.spriteFlip[2]
+    oy =  self.height
+  end
+
+  love.graphics.draw(self.canvas, self.x, self.y, 0, rx, ry)
 end
+
 ------------------------------------------------------------------------------------------------------
-function Object:update() 
-  
+function Object:update()
+  if self.collision then
+    self.direction[1] = self.direction[1] * -1
+    self.direction[2] = self.direction[2] * -1
+    self.spriteFlip[1] = self.spriteFlip[1] * -1
+    self.spriteFlip[2] = self.spriteFlip[2] * -1
+    self.collision = false
+  end
   self.oX, self.oY = self.x, self.y
   self.x = self.x + self.direction[1]
-  self.y = self.y + self.direction[2] 
+  self.y = self.y + self.direction[2]
 end
+
 ------------------------------------------------------------------------------------------------------
 function Object:flood8(x, y, map, width, height)
   if x <= width and x >= 1 and y <= height and y >= 1 then
@@ -44,6 +70,7 @@ function Object:flood8(x, y, map, width, height)
     end
   end
 end
+
 ------------------------------------------------------------------------------------------------------
 function Object:consolidate()
   local minX, minY, maxX, maxY = nil, nil, nil, nil
@@ -63,22 +90,23 @@ function Object:consolidate()
   local t = {}
   for _, v in pairs(self.pixels) do
     --inseriamo le posizioni relative a x e y dell'oggetto
-    table.insert(t, { v[1] - self.x +1 , v[2] - self.y +1  })
+    table.insert(t, { v[1] - self.x + 1, v[2] - self.y + 1 })
   end
   self.pixels = t
 
-  -- ora disegnamo l'oggetto nel canvas 
+  -- ora disegnamo l'oggetto nel canvas
   self.canvas = love.graphics.newCanvas(self.width, self.height)
   love.graphics.setCanvas(self.canvas)
   love.graphics.clear(0, 0, 0, 0)
   love.graphics.setColor(self.r, self.g, self.b)
   for k, v in pairs(self.pixels) do
-    local x, y = v[1] -1, v[2] -1
-    love.graphics.rectangle("fill",x, y, 1, 1)
+    local x, y = v[1] - 1, v[2] - 1
+    love.graphics.rectangle("fill", x, y, 1, 1)
   end
   love.graphics.setCanvas()
 
 end
+
 ------------------------------------------------------------------------------------------------------
 function Object:isPixel(x, y)
   for k, v in pairs(self.pixels) do
@@ -87,13 +115,14 @@ function Object:isPixel(x, y)
     end
   end
 end
+
 ------------------------------------------------------------------------------------------------------
 function Object:leftArrow()
   -- creiamo una tabella temporanea
   local t = {}
   for key, v in pairs(self.pixels) do
     --inseriamo le posizioni relative a x e y dell'oggetto
-    table.insert(t, {v[1], v[2]})
+    table.insert(t, { v[1], v[2] })
   end
   for k, v in pairs(t) do
     --eliminiamo la punta sinistra della freccia
@@ -120,6 +149,7 @@ function Object:leftArrow()
     return false
   end
 end
+
 ------------------------------------------------------------------------------------------------------
 function Object:upArrow()
   -- creiamo una tabella temporanea
@@ -153,6 +183,7 @@ function Object:upArrow()
     return false
   end
 end
+
 ------------------------------------------------------------------------------------------------------
 function Object:downArrow()
   -- creiamo una tabella temporanea
@@ -186,6 +217,7 @@ function Object:downArrow()
     return false
   end
 end
+
 ------------------------------------------------------------------------------------------------------
 function Object:rightArrow()
   -- creiamo una tabella temporanea
@@ -219,6 +251,7 @@ function Object:rightArrow()
     return false
   end
 end
+
 ------------------------------------------------------------------------------------------------------
 function Object:topLeftArrow()
   -- se l'oggetto è quadrato
@@ -373,29 +406,33 @@ end
 ------------------------------------------------------------------------------------------------------
 function Object:checkArrow()
   if self.width > 1 and self.height > 1 then
-    if self:leftArrow() then -- sinistra 
-      self.direction = {-1,0}
+    if self:leftArrow() then -- sinistra
+      self.direction = { -1, 0 }
+      self.spriteFlip = { 1, 0 }
     elseif self:rightArrow() then
-      self.direction = {1,0}
+      self.direction = { 1, 0 }
+      self.spriteFlip = { 1, 0 }
+
     elseif self:upArrow() then
-      self.direction = {0,-1}
+      self.direction = { 0, -1 }
     elseif self:downArrow() then
-      self.direction = {0,1}
+      self.direction = { 0, 1 }
     elseif self:topLeftArrow() then
-      self.direction = {-1,-1}
+      self.direction = { -1, -1 }
     elseif self:topRightArrow() then
-      self.direction = {1,-1}
+      self.direction = { 1, -1 }
     elseif self:bottomLeftArrow() then
-      self.direction = {-1,1}
+      self.direction = { -1, 1 }
     elseif self:bottomRightArrow() then
-      self.direction = {1,1}
+      self.direction = { 1, 1 }
     else -- se non è freccia l'oggetto è fermo
-      self.direction = {0,0}
+      self.direction = { 0, 0 }
     end
   else
-    self.direction = {0,0}
+    self.direction = { 0, 0 }
   end
 end
+
 ------------------------------------------------------------------------------------------------------
 
 

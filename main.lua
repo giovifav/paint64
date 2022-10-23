@@ -16,10 +16,7 @@ end
 
 function love.update(dt)
     level:update(dt)
-    if level.restart then
-        level = nil
-        level = Level("dungeon.png")
-    end
+
 end
 
 function love.draw()

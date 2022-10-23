@@ -75,7 +75,7 @@ function Level:draw()
 end
 ------------------------------------------------------------------------------------------------------
 local accum = 0
-local step = 0.05 -- fixed time step
+local step = 0.1 -- fixed time step
 function Level:update(dt)
     accum = accum + dt
     while accum >= step do
@@ -107,10 +107,13 @@ function Level:checkCollision()
 end
 ------------------------------------------------------------------------------------------------------
 function Level:resolveCollision(obj1, obj2)
-    if obj1.type == 'player' and obj2.type == 'wall' then --to fix 
+    obj1.collision = true
+    obj2.collision = true
+
+    if obj1.type == 'player' and obj2.type == 'wall' then
         obj1.x = obj1.oX
         obj1.y = obj1.oY
-    elseif obj1.type == 'wall' and obj2.type == 'player' then--FIXME
+    elseif obj1.type == 'wall' and obj2.type == 'player' then
         obj2.x = obj2.oX
         obj2.y = obj2.oY
     elseif obj1.type == 'player' and obj2.type == 'barrier' then
@@ -122,9 +125,9 @@ function Level:resolveCollision(obj1, obj2)
     elseif obj1.type == 'player' and obj2.type == 'goal' then
         obj2.remove = true
     elseif obj1.type == 'player' and obj2.type == 'enemy' then
-        self.restart = true
+        self:new(self.filename)
     elseif obj1.type == 'enemy' and obj2.type == 'player' then
-        self.restart = true
+        self:new(self.filename)
     end
 end
 ------------------------------------------------------------------------------------------------------
