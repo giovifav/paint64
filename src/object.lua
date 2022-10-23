@@ -30,7 +30,8 @@ function Object:draw()
   love.graphics.setColor(self.r, self.g, self.b)
 
     for k, v in pairs(self.pixels) do
-      local x, y = self.x - v[1], self.y - v[2] 
+      local x, y = self.x + v[1], self.y + v[2] 
+      --local x, y = v[1], v[2]
       love.graphics.rectangle("fill",x, y, 1, 1)
     end
 
@@ -83,6 +84,13 @@ function Object:consolidate()
   self.height = maxY - minY + 1
 
   self.x, self.y = minX, minY
+
+  local t = {}
+  for key, v in pairs(self.pixels) do
+    --inseriamo le posizioni relative a x e y dell'oggetto
+    table.insert(t, { v[1] - self.x , v[2] - self.y })
+  end
+  self.pixels = t
  
 
 end
@@ -107,7 +115,7 @@ function Object:leftArrow()
   local t = {}
   for key, v in pairs(self.pixels) do
     --inseriamo le posizioni relative a x e y dell'oggetto
-    table.insert(t, { v[1] - self.x + 1, v[2] - self.y + 1 })
+    table.insert(t, {v[1], v[2]})
   end
   for k, v in pairs(t) do
     --eliminiamo la punta sinistra della freccia
@@ -142,7 +150,7 @@ function Object:upArrow()
   local t = {}
   for key, v in pairs(self.pixels) do
     --inseriamo le posizioni relative a x e y dell'oggetto
-    table.insert(t, { v[1] - self.x + 1, v[2] - self.y + 1 })
+    table.insert(t, v)
   end
   for k, v in pairs(t) do
     --eliminiamo la punta superiore della freccia
@@ -176,7 +184,7 @@ function Object:downArrow()
   local t = {}
   for key, v in pairs(self.pixels) do
     --inseriamo le posizioni relative a x e y dell'oggetto
-    table.insert(t, { v[1] - self.x + 1, v[2] - self.y + 1 })
+    table.insert(t, v)
   end
   for k, v in pairs(t) do
     --eliminiamo la punta inferiore della freccia
@@ -210,7 +218,7 @@ function Object:rightArrow()
   local t = {}
   for key, v in pairs(self.pixels) do
     --inseriamo le posizioni relative a x e y dell'oggetto
-    table.insert(t, { v[1] - self.x + 1, v[2] - self.y + 1 })
+    table.insert(t, v)
   end
   for k, v in pairs(t) do
     --eliminiamo la punta destra della freccia
@@ -246,7 +254,7 @@ function Object:topLeftArrow()
     local t = {}
     for key, v in pairs(self.pixels) do
       --inseriamo le posizioni relative a x e y dell'oggetto
-      table.insert(t, { v[1] - self.x + 1, v[2] - self.y + 1 })
+      table.insert(t, v)
     end
 
     -- eliminiamo i pixel orizzontali
@@ -284,9 +292,8 @@ function Object:topRightArrow()
     local t = {}
     for key, v in pairs(self.pixels) do
       --inseriamo le posizioni relative a x e y dell'oggetto
-      table.insert(t, { v[1] - self.x + 1, v[2] - self.y + 1 })
+      table.insert(t, v)
     end
-
     -- eliminiamo i pixel orizzonatali
     for x = 1, self.width do
       for k, v in pairs(t) do
@@ -322,7 +329,7 @@ function Object:bottomRightArrow()
     local t = {}
     for key, v in pairs(self.pixels) do
       --inseriamo le posizioni relative a x e y dell'oggetto
-      table.insert(t, { v[1] - self.x + 1, v[2] - self.y + 1 })
+      table.insert(t, v)
     end
 
     -- eliminiamo i pixel orizzonatali
@@ -360,7 +367,7 @@ function Object:bottomLeftArrow()
     local t = {}
     for key, v in pairs(self.pixels) do
       --inseriamo le posizioni relative a x e y dell'oggetto
-      table.insert(t, { v[1] - self.x + 1, v[2] - self.y + 1 })
+      table.insert(t, v)
     end
 
     -- eliminiamo i pixel orizzonatali

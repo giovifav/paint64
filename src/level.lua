@@ -40,7 +40,12 @@ function Level:addObjects()
             
             local m = map[x][y]
             if type(m) == "table" then
-                local obj = Object(m[1], m[2], m[3])
+                local obj
+                if m[1] == 0 and m[2] == 1 and m[3] == 1 then
+                    obj = Player(unpack(m)) 
+                else
+                    obj = Object(unpack(m))
+                end
                 obj:flood8(x, y, map, self.width, self.height)
                 table.insert(self.objects, obj)
             end

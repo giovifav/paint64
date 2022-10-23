@@ -11,7 +11,7 @@ C = {
 }
 function love.load()
     love.graphics.setDefaultFilter("nearest","nearest")
-    love.graphics.setColor(1,1,1,1)
+
     level = Level("dungeon.png")
 end
 
@@ -23,4 +23,3 @@ function love.draw()
     level:draw()
 
 end
-
