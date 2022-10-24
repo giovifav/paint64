@@ -17,12 +17,6 @@ function Level:new(imgFileName)
     end
     self:addObjects()
     self.levelTable = nil
-    --controlliamo se gli oggetti sono freccie
-    for x, obj in ipairs(self.objects) do
-        obj:consolidate()
-        obj:checkArrow()
-
-    end
     love.graphics.setBackgroundColor(0, 0, 0)
 end
 ------------------------------------------------------------------------------------------------------
@@ -61,6 +55,12 @@ function Level:addObjects()
             end
         end
     end
+        --controlliamo se gli oggetti sono freccie
+        for x, obj in ipairs(self.objects) do
+            obj:consolidate()
+            obj:checkArrow()
+    
+        end
 end
 ------------------------------------------------------------------------------------------------------
 function Level:draw()
