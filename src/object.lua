@@ -8,7 +8,7 @@ function Object:new(r, g, b)
   self.pixels     = {}
   self.remove     = false
   self.solid      = false
-  self.spriteFlip = { 0, 0 }
+  
 
 end
 
@@ -18,23 +18,29 @@ function Object:addPixel(x, y)
 end
 
 ------------------------------------------------------------------------------------------------------
+function Object:rotatePixels180()
+  for _, p in ipairs(self.pixels) do
+    local rad = math.rad(180)
+    local x = p[1] * math.cos(rad) - p[2] * math.sin(rad)
+    local y = p[1] * math.sin(rad) + p[2] * math.cos(rad)
+    p[1] = x + self.width +1
+    p[2] = y + self.height +1
+end
+self.x = self.oX
+self.y = self.oY
+end
+
+
+
+------------------------------------------------------------------------------------------------------
 function Object:draw()
-  love.graphics.setColor(1, 1, 1, 1)
-  local rx, ry, ox, oy = 0, 0, 0,0
-  if self.spriteFlip[1] == 0 then
-    rx = 1
-  else
-    rx = self.spriteFlip[1]
-    ox = self.width/2
-  end
-  if self.spriteFlip[2] == 0 then
-    ry = 1
-  else
-    ry = self.spriteFlip[2]
-    oy =  self.height
+  love.graphics.setColor(self.r, self.g, self.b)
+  for k, v in pairs(self.pixels) do
+    local x, y = self.x + v[1]-1 , self.y + v[2] -1
+    love.graphics.rectangle("fill", x, y, 1, 1)
   end
 
-  love.graphics.draw(self.canvas, self.x, self.y, 0, rx, ry)
+
 end
 
 ------------------------------------------------------------------------------------------------------
@@ -42,8 +48,9 @@ function Object:update()
   if self.collision then
     self.direction[1] = self.direction[1] * -1
     self.direction[2] = self.direction[2] * -1
-    self.spriteFlip[1] = self.spriteFlip[1] * -1
-    self.spriteFlip[2] = self.spriteFlip[2] * -1
+    if self.direction[1] ~= 0 or self.direction[2] ~= 0 then
+      self:rotatePixels180()
+    end
     self.collision = false
   end
   self.oX, self.oY = self.x, self.y
@@ -94,6 +101,7 @@ function Object:consolidate()
   end
   self.pixels = t
 
+  --[[
   -- ora disegnamo l'oggetto nel canvas
   self.canvas = love.graphics.newCanvas(self.width, self.height)
   love.graphics.setCanvas(self.canvas)
@@ -104,7 +112,7 @@ function Object:consolidate()
     love.graphics.rectangle("fill", x, y, 1, 1)
   end
   love.graphics.setCanvas()
-
+]]
 end
 
 ------------------------------------------------------------------------------------------------------
@@ -408,10 +416,9 @@ function Object:checkArrow()
   if self.width > 1 and self.height > 1 then
     if self:leftArrow() then -- sinistra
       self.direction = { -1, 0 }
-      self.spriteFlip = { 1, 0 }
+
     elseif self:rightArrow() then
       self.direction = { 1, 0 }
-      self.spriteFlip = { 1, 0 }
 
     elseif self:upArrow() then
       self.direction = { 0, -1 }
@@ -434,15 +441,4 @@ function Object:checkArrow()
 end
 
 ------------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
 return Object
