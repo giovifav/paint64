@@ -1,4 +1,3 @@
-
 local Level = Class:extend()
 
 function Level:new(imgFileName)
@@ -19,6 +18,7 @@ function Level:new(imgFileName)
     self.levelTable = nil
     love.graphics.setBackgroundColor(0, 0, 0)
 end
+
 ------------------------------------------------------------------------------------------------------
 function Level:addObjects()
     local map = self.levelTable
@@ -36,12 +36,12 @@ function Level:addObjects()
                     obj.type = "wall"
                     obj:flood8(x, y, map, self.width, self.height)
                     table.insert(self.objects, obj)
-                elseif m[1] == 1 and m[2] == 1 and m[3] == 0 then -- giallo 1,1,0 -- BARRIER 
+                elseif m[1] == 1 and m[2] == 1 and m[3] == 0 then -- giallo 1,1,0 -- BARRIER
                     local obj = Object(unpack(m))
                     obj.type = "barrier"
                     obj:flood8(x, y, map, self.width, self.height)
                     table.insert(self.objects, obj)
-                elseif m[1] == 0 and m[2] == 1 and m[3] == 0 then -- verde 0,1,0 --GOAL 
+                elseif m[1] == 0 and m[2] == 1 and m[3] == 0 then -- verde 0,1,0 --GOAL
                     local obj = Object(unpack(m))
                     obj.type = 'goal'
                     obj:flood8(x, y, map, self.width, self.height)
@@ -55,13 +55,14 @@ function Level:addObjects()
             end
         end
     end
-        --controlliamo se gli oggetti sono freccie
-        for x, obj in ipairs(self.objects) do
-            obj:consolidate()
-            obj:checkArrow()
-    
-        end
+    --controlliamo se gli oggetti sono freccie
+    for x, obj in ipairs(self.objects) do
+        obj:consolidate()
+        obj:checkArrow()
+
+    end
 end
+
 ------------------------------------------------------------------------------------------------------
 function Level:draw()
     love.graphics.push()
@@ -73,10 +74,26 @@ function Level:draw()
     end
     love.graphics.pop()
 end
+
 ------------------------------------------------------------------------------------------------------
 local accum = 0
 local step = 0.1 -- fixed time step
 function Level:update(dt)
+     
+    for _, obj in pairs(self.objects) do
+        if obj.type == "player" then
+            local x, y = input:get("move")
+                if x ~= 0 or y ~= 0 then
+                result, obj2 = self:objCollideAt(obj, obj.x + x, obj.y + y)
+                if not result then
+                    obj:move(x,y)
+                end
+            end
+        end
+    end
+
+
+
     accum = accum + dt
     while accum >= step do
         for k, obj in ipairs(self.objects) do
@@ -92,31 +109,36 @@ function Level:update(dt)
     end
 
 end
+
 ------------------------------------------------------------------------------------------------------
 function Level:checkCollision()
+    for _, obj in pairs(self.objects) do
+        if obj.motion then
+            result, obj2 = self:objCollideAt(obj, obj.x + obj.direction[1], obj.y + obj.direction[2])
+            if result then
+                obj:onCollision(obj2)
+            end
+        end
+    end
+
+
     for _, obj1 in pairs(self.objects) do
         for __, obj2 in pairs(self.objects) do
             if obj1 ~= obj2 then
                 if self:objCollide(obj1, obj2) then
-                    print("collision")
-                    self:resolveCollision(obj1, obj2)
+
+                        self:resolveCollision(obj1, obj2)
+                    
                 end
             end
         end
     end
 end
+
 ------------------------------------------------------------------------------------------------------
 function Level:resolveCollision(obj1, obj2)
-    obj1.collision = true
-    obj2.collision = true
-
-    if obj1.type == 'player' and obj2.type == 'wall' then
-        obj1.x = obj1.oX
-        obj1.y = obj1.oY
-    elseif obj1.type == 'wall' and obj2.type == 'player' then
-        obj2.x = obj2.oX
-        obj2.y = obj2.oY
-    elseif obj1.type == 'player' and obj2.type == 'barrier' then
+    
+    if obj1.type == 'player' and obj2.type == 'barrier' then
         obj2.remove = true
     elseif obj1.type == 'barrier' and obj2.type == 'player' then
         obj1.remove = true
@@ -130,6 +152,7 @@ function Level:resolveCollision(obj1, obj2)
         self:new(self.filename)
     end
 end
+
 ------------------------------------------------------------------------------------------------------
 function Level:objCollide(obj1, obj2)
     for index1, pixel1 in pairs(obj1.pixels) do
@@ -142,5 +165,19 @@ function Level:objCollide(obj1, obj2)
     end
     return false
 end
+
+function Level:objCollideAt(obj1, x, y)
+    for _, obj2 in pairs(self.objects) do
+        for index1, pixel1 in pairs(obj1.pixels) do
+            for index2, pixel2 in pairs(obj2.pixels) do
+                if pixel1[1] + x == pixel2[1] + obj2.x and
+                    pixel1[2] + y == pixel2[2] + obj2.y then
+                    return true, obj2
+                end
+            end
+        end
+    end
+end
+
 ------------------------------------------------------------------------------------------------------
 return Level

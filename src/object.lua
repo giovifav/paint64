@@ -1,14 +1,16 @@
 local Object = Class:extend()
 ------------------------------------------------------------------------------------------------------
 function Object:new(r, g, b)
-  self.type       = "basicObject"
-  self.r          = r or 1
-  self.g          = g or 1
-  self.b          = b or 1
-  self.pixels     = {}
-  self.remove     = false
-  self.solid      = false
-  
+  self.type      = "basicObject"
+  self.r         = r or 1
+  self.g         = g or 1
+  self.b         = b or 1
+  self.pixels    = {}
+  self.remove    = false
+  self.solid     = false
+  self.direction = {}
+  self.motion    = false
+
 
 end
 
@@ -24,35 +26,36 @@ function Object:rotatePixels180()
     local x = p[1] * math.cos(rad) - p[2] * math.sin(rad)
     local y = p[1] * math.sin(rad) + p[2] * math.cos(rad)
     p[1] = x + self.width +1
-    p[2] = y + self.height +1
+    p[2] = y + self.height 
+  end
+  self.x = self.oX
+  self.y = self.oY
 end
-self.x = self.oX
-self.y = self.oY
-end
-
-
 
 ------------------------------------------------------------------------------------------------------
 function Object:draw()
   love.graphics.setColor(self.r, self.g, self.b)
   for k, v in pairs(self.pixels) do
-    local x, y = self.x + v[1]-1 , self.y + v[2] -1
+    local x, y = self.x + v[1] - 1, self.y + v[2] - 1
     love.graphics.rectangle("fill", x, y, 1, 1)
   end
 
 
 end
 
-------------------------------------------------------------------------------------------------------
-function Object:update()
-  if self.collision then
+function Object:onCollision(obj2)
+  if self.motion then
     self.direction[1] = self.direction[1] * -1
     self.direction[2] = self.direction[2] * -1
     if self.direction[1] ~= 0 or self.direction[2] ~= 0 then
       self:rotatePixels180()
     end
-    self.collision = false
   end
+end
+
+------------------------------------------------------------------------------------------------------
+function Object:update()
+
   self.oX, self.oY = self.x, self.y
   self.x = self.x + self.direction[1]
   self.y = self.y + self.direction[2]
@@ -413,31 +416,30 @@ end
 
 ------------------------------------------------------------------------------------------------------
 function Object:checkArrow()
-  if self.width > 1 and self.height > 1 then
-    if self:leftArrow() then -- sinistra
-      self.direction = { -1, 0 }
+  self.motion = true
+  if self:leftArrow() then -- sinistra
+    self.direction = { -1, 0 }
 
-    elseif self:rightArrow() then
-      self.direction = { 1, 0 }
+  elseif self:rightArrow() then
+    self.direction = { 1, 0 }
 
-    elseif self:upArrow() then
-      self.direction = { 0, -1 }
-    elseif self:downArrow() then
-      self.direction = { 0, 1 }
-    elseif self:topLeftArrow() then
-      self.direction = { -1, -1 }
-    elseif self:topRightArrow() then
-      self.direction = { 1, -1 }
-    elseif self:bottomLeftArrow() then
-      self.direction = { -1, 1 }
-    elseif self:bottomRightArrow() then
-      self.direction = { 1, 1 }
-    else -- se non è freccia l'oggetto è fermo
-      self.direction = { 0, 0 }
-    end
-  else
+  elseif self:upArrow() then
+    self.direction = { 0, -1 }
+  elseif self:downArrow() then
+    self.direction = { 0, 1 }
+  elseif self:topLeftArrow() then
+    self.direction = { -1, -1 }
+  elseif self:topRightArrow() then
+    self.direction = { 1, -1 }
+  elseif self:bottomLeftArrow() then
+    self.direction = { -1, 1 }
+  elseif self:bottomRightArrow() then
+    self.direction = { 1, 1 }
+  else -- se non è freccia l'oggetto è fermo
     self.direction = { 0, 0 }
+    self.motion = false
   end
+
 end
 
 ------------------------------------------------------------------------------------------------------
